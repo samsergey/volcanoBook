@@ -430,6 +430,7 @@ Graphics.prototype.listPlot = function (d, opts)
     return this
 }
 
+
 var marker = ["▫","+","×"]
 
 Graphics.prototype.diffListPlot = function(dataA, dataB, opts)
