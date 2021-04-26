@@ -65,8 +65,13 @@
     }
     fig1_1()
 
-    function fig1_2()
+    function fig2()
     {
+	var data = {'0.25 см - 0.5 см':0.1,
+		    '0.5 см - 1 см':0.1,
+		    '1 см - 5 см':0.1,
+		    '5 см - 0.5 м':0.35,
+		    '0.5 - 5 м':0.1}
 	return new Graphics(createSVG('fig1_2'),{aspectRatio:1})
 	    .xRange([0,1.001])
 	    .yRange([0,1.001])
@@ -79,7 +84,9 @@
 		   yTickValues:[0,1/2,4/5,1],
 		   yLabel:"высота конуса"})
     }
-    fig1_2()
+    fig2()
 
+
+    
   </script>
 </html>
