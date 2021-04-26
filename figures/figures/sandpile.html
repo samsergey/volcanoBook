@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='UTF-8'/>
+    <script src='../lib/d3.js'></script>
+    <script src='../lib/analysis.js'></script>
+    <script src='../lib/functions.js'></script>
+    <script src='../lib/tools.js'></script>
+    <script src='../lib/graphics.js'></script>
+    <link rel="stylesheet" href="../css/bw.css">
+    <style>
+      .queue {
+	  stroke-width:0.25px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id='canvas' width='400' height='400'></canvas>
+  </body>
+  <script>
+    var N = 400,i,j;
+    var ctx = canvas.getContext('2d');
+    ctx.globalAlpha = 0.1
+    var pile = new Array()
+
+    function elevation(i,j)
+    {
+	return pile[i] && pile[i][j] || 0
+    }
+
+    function addTo(i,j,n) {
+	if (i < 0 || i > N || j < 0 || j > N)
+	    return
+	if (!pile[i]) pile[i] = new Array()
+	pile[i][j] = (pile[i][j] || 0) + n
+	if (pile[i][j] > 4) enq(i,j)
+	show(i,j)
+    }
+
+    function set(i,j,n) {
+	if (!pile[i]) pile[i] = new Array()
+	pile[i][j] = n
+    }
+
+    var que = new Set()
+    
+    function enq(i,j) {
+	que.add(i*N+j)
+    }
+    function deq(i,j) {
+	que.delete(i*N+j)
+    }
+
+
+    function divMod(a,n) {
+	return [ Math.floor(a/n), a % n ]
+    }
+    
+    function step() {
+	i = N/2 // Math.round(Math.random()*N)
+	j = N/2 // Math.round(Math.random()*N)
+	addTo(i,j,1)
+	while (que.data.length > 0)
+	{
+	    d = que.data
+	    d.forEach(n => {
+		var [i,j] = divMod(n,N) 
+		addTo(i,   j, -4)
+		if (elevation(i,j)<4)
+		    deq
+		addTo(i-1, j, 1)
+		addTo(i, j-1, 1)
+		addTo(i+1, j, 1)
+		addTo(i, j+1, 1)
+	    })
+	}
+/*	ctx.globalAlpha = 0.01
+	ctx.fillStyle = 'white'
+	ctx.fillRect(0,0,N,N)*/
+    }
+
+    function show(i,j) {
+	ctx.globalAlpha = 0.5
+	ctx.fillStyle = color(i,j)
+	ctx.fillRect(i,j,1,1)
+    }
+    
+    function color(i,j)
+    {
+	return ['white','red','blue','yellow'][elevation(i,j)]
+    }
+
+    window.setInterval(step,1)
+  </script>
+</html>
