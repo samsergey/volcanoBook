@@ -21,6 +21,7 @@
     var N = 400,i,j;
     var ctx = canvas.getContext('2d');
     ctx.globalAlpha = 0.1
+    var imd = ctx.createImageData(N, N);
     var pile = new Array()
 
     function elevation(i,j)
@@ -29,15 +30,17 @@
     }
 
     function addTo(i,j,n) {
-	if (i < 0 || i > N || j < 0 || j > N)
+	if (i <= 0 || i > N || j <= 0 || j > N)
 	    return
 	if (!pile[i]) pile[i] = new Array()
 	pile[i][j] = (pile[i][j] || 0) + n
-	if (pile[i][j] > 4) enq(i,j)
-	show(i,j)
+	if (elevation(i,j) >= 4) enq(i,j)
+	put(i,j)
     }
 
     function set(i,j,n) {
+	if (i < 0 || i > N || j < 0 || j > N)
+	    return
 	if (!pile[i]) pile[i] = new Array()
 	pile[i][j] = n
     }
@@ -57,26 +60,48 @@
     }
     
     function step() {
-	i = N/2 // Math.round(Math.random()*N)
-	j = N/2 // Math.round(Math.random()*N)
+	i = Math.round(Math.random()*0)+N/2
+	j = Math.round(Math.random()*0)+N/2
 	addTo(i,j,1)
-	while (que.data.length > 0)
+	while (que.size  > 0)
 	{
-	    d = que.data
-	    d.forEach(n => {
+	    que.forEach(n => {
 		var [i,j] = divMod(n,N) 
 		addTo(i,   j, -4)
 		if (elevation(i,j)<4)
-		    deq
+		    deq(i,j)
 		addTo(i-1, j, 1)
 		addTo(i, j-1, 1)
 		addTo(i+1, j, 1)
 		addTo(i, j+1, 1)
 	    })
 	}
-/*	ctx.globalAlpha = 0.01
+	
+    }
+
+    function multistep(n) {
+	return () =>
+	{
+	    for(var i = 0; i < n; i++)
+		step()
+	    ctx.putImageData(imd, 0, 0);
+	}
+    }
+
+    function put(i,j) {
+	var p = 4*(i*N+j)
+	//var c = elevation(i,j) % 3
+	imd.data[p+0] = elevation(i,j) / 3 * 255
+	imd.data[p+1] = elevation(i,j) / 3 * 255
+	imd.data[p+2] = elevation(i,j) / 3 * 255
+	imd.data[p+3] = 255
+    }
+    
+    function fade()
+    {
+	ctx.globalAlpha = 0.01
 	ctx.fillStyle = 'white'
-	ctx.fillRect(0,0,N,N)*/
+	ctx.fillRect(0,0,N,N)
     }
 
     function show(i,j) {
@@ -90,6 +115,6 @@
 	return ['white','red','blue','yellow'][elevation(i,j)]
     }
 
-    window.setInterval(step,1)
+    window.setInterval(multistep(1000),1)
   </script>
 </html>
