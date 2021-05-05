@@ -7,18 +7,54 @@
     <script src='../lib/functions.js'></script>
     <script src='../lib/tools.js'></script>
     <script src='../lib/graphics.js'></script>
+    <script src='../lib/signal.js'></script>
     <link rel="stylesheet" href="../css/bw.css">
     <style>
-      .queue {
+      .plot {
 	  stroke-width:0.25px;
+	  stroke-opacity: 0.5px;
       }
     </style>
   </head>
   <body>
-    <canvas id='canvas' width='400' height='400'></canvas>
+    <canvas id='canvas' width='50' height='50'></canvas>
+    <br/>
+    <svg id='fig1' width='600' height='300'></svg>
+    <svg id='fig2' width='600' height='300'></svg>
+    <svg id='fig3' width='600' height='300'></svg>
+    <svg id='fig4' width='600' height='300'></svg>
   </body>
   <script>
-    var N = 400,i,j;
+
+    var fig1 = d3.select("#fig1")
+    var t1 = new Graphics(fig1)
+	.xRange([0,4000])
+	.yRange([1,20000])
+    	.yAxisType('log')
+	.axes({})
+
+    var fig2 = d3.select("#fig2")
+    var t2 = new Graphics(fig2)
+	.xRange([0,2000])
+	.yRange([1,15000])
+    	.yAxisType('log')
+	.axes({})
+
+    var fig3 = d3.select("#fig3")
+    var t3 = new Graphics(fig3)
+	.xRange([0,1000])
+	.yRange([1,8000])
+    	.yAxisType('log')
+	.axes({})
+
+    var fig4 = d3.select("#fig4")
+    var t4 = new Graphics(fig4)
+	.xRange([0,16])
+	.yRange([0,1])
+	.axes({})
+
+    
+    var N = 50,i,j;
     var ctx = canvas.getContext('2d');
     ctx.globalAlpha = 0.1
     var imd = ctx.createImageData(N, N);
@@ -43,20 +79,23 @@
     }
 
     var que = new Set()
+    var timedata = []
     const enq = (i,j) => que.add(i*N+j)
     const deq = (i,j) => que.delete(i*N+j)
     const divMod = (a,n) => [ Math.floor(a/n), a % n ]
-   
+
     
     function step() {
 	i = Math.round(Math.random()*0)+N/2
 	j = Math.round(Math.random()*0)+N/2
 	addTo(i,j,1)
+	var catastrophe = 0
 	while (que.size  > 0)
 	{
 	    que.forEach(n => {
 		var [i,j] = divMod(n,N) 
 		addTo(i,   j, -4)
+		catastrophe++
 		if (elevation(i,j) < 4) deq(i,j)
 		addTo(i-1, j, 1)
 		addTo(i, j-1, 1)
@@ -64,7 +103,14 @@
 		addTo(i, j+1, 1)
 	    })
 	}
-	
+	timedata.push(catastrophe)
+	if (timedata.length > 2**13) timedata.shift()
+/*	t1.cleanPaper().listLinePlot(timedata.slice(0,4000))
+	t2.cleanPaper().listLinePlot(timedata.slice(0,2000))
+	t3.cleanPaper().listLinePlot(timedata.slice(0,1000))*/
+	t4.cleanPaper()
+	    .listLinePlot(PSD(timedata).slice(0,16).map(x => x/1e7))
+	    //.plot(x => 1e5/(x*x))
     }
 
     function multistep(n) {
@@ -103,6 +149,6 @@
 	return ['white','red','blue','yellow'][elevation(i,j)]
     }
 
-    window.setInterval(multistep(100),1)
+    window.setInterval(multistep(10),1)
   </script>
 </html>
